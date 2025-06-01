@@ -1,0 +1,17 @@
+data:
+  raw_path: "data/raw/creditcard.csv"
+  processed_dir: "data/processed/"
+  external_dir: "data/external/"
+  
+model:
+  save_dir: "models/"
+  test_size: 0.2
+  random_state: 42
+  metrics_file: "reports/metrics.json"
+  
+features:
+  to_scale: ["Time", "Amount"]
+  target: "Class"
+  
+streaming:
+  sample_rate: 0.1  

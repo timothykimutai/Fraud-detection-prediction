@@ -1,0 +1,25 @@
+# Data
+data/processed/
+data/external/
+
+# Models
+models/
+
+# Environment
+venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log

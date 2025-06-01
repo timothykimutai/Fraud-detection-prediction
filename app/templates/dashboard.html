@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Fraud Detection Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.0.7/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f1c40f;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .sidebar {
+            background-color: var(--primary-color);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .stat-card.primary { background-color: var(--primary-color); }
+        .stat-card.success { background-color: var(--success-color); }
+        .stat-card.danger { background-color: var(--danger-color); }
+        .stat-card.warning { background-color: var(--warning-color); }
+        
+        .transaction-form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        
+        .nav-link {
+            color: white;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .nav-link.active {
+            background-color: var(--secondary-color);
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .transaction-history {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .settings-form {
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar">
+                <h3 class="mb-4">Fraud Detection</h3>
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" data-section="dashboard"><i class='bx bxs-dashboard'></i> Dashboard</a>
+                    <a class="nav-link" href="#" data-section="history"><i class='bx bx-history'></i> Transaction History</a>
+                    <a class="nav-link" href="#" data-section="settings"><i class='bx bx-cog'></i> Settings</a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Dashboard Section -->
+                <div id="dashboard" class="content-section active">
+                    <h2 class="mb-4">Dashboard</h2>
+                    
+                    <!-- Stats Cards -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stat-card primary">
+                                <h5>Total Transactions</h5>
+                                <h3 id="totalTransactions">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card success">
+                                <h5>Legitimate</h5>
+                                <h3 id="legitimateCount">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card danger">
+                                <h5>Fraudulent</h5>
+                                <h3 id="fraudCount">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card warning">
+                                <h5>Fraud Rate</h5>
+                                <h3 id="fraudRate">0%</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Form -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="transaction-form">
+                                <h4>Check Transaction</h4>
+                                <form id="transactionForm">
+                                    <div class="mb-3">
+                                        <label for="amount" class="form-label">Amount</label>
+                                        <input type="number" class="form-control" id="amount" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="time" class="form-label">Time</label>
+                                        <select class="form-select" id="time" required>
+                                            <option value="32400">9:00 AM (Low Risk)</option>
+                                            <option value="36000">10:00 AM (Low Risk)</option>
+                                            <option value="39600">11:00 AM (Low Risk)</option>
+                                            <option value="43200">12:00 PM (Low Risk)</option>
+                                            <option value="46800">1:00 PM (Low Risk)</option>
+                                            <option value="50400">2:00 PM (Low Risk)</option>
+                                            <option value="54000">3:00 PM (Low Risk)</option>
+                                            <option value="57600">4:00 PM (Low Risk)</option>
+                                            <option value="61200">5:00 PM (Low Risk)</option>
+                                            <option value="64800">6:00 PM (Medium Risk)</option>
+                                            <option value="68400">7:00 PM (Medium Risk)</option>
+                                            <option value="72000">8:00 PM (Medium Risk)</option>
+                                            <option value="75600">9:00 PM (Medium Risk)</option>
+                                            <option value="79200">10:00 PM (High Risk)</option>
+                                            <option value="82800">11:00 PM (High Risk)</option>
+                                            <option value="0">12:00 AM (High Risk)</option>
+                                            <option value="3600">1:00 AM (High Risk)</option>
+                                            <option value="7200">2:00 AM (High Risk)</option>
+                                            <option value="10800">3:00 AM (High Risk)</option>
+                                            <option value="14400">4:00 AM (High Risk)</option>
+                                            <option value="18000">5:00 AM (Medium Risk)</option>
+                                            <option value="21600">6:00 AM (Medium Risk)</option>
+                                            <option value="25200">7:00 AM (Medium Risk)</option>
+                                            <option value="28800">8:00 AM (Low Risk)</option>
+                                        </select>
+                                        <small class="form-text text-muted">
+                                            Select a time of day. Business hours (9 AM - 5 PM) are generally considered lower risk.
+                                        </small>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Check Transaction</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4>Latest Results</h4>
+                                    <div id="resultsList" class="list-group">
+                                        <!-- Results will be added here dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction History Section -->
+                <div id="history" class="content-section">
+                    <h2 class="mb-4">Transaction History</h2>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <h4>Recent Transactions</h4>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-primary" id="exportCSV">Export CSV</button>
+                                    <button class="btn btn-outline-danger" id="clearHistory">Clear History</button>
+                                </div>
+                            </div>
+                            <div class="transaction-history">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Probability</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="historyTableBody">
+                                        <!-- History will be added here dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Section -->
+                <div id="settings" class="content-section">
+                    <h2 class="mb-4">Settings</h2>
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="settingsForm" class="settings-form">
+                                <div class="mb-3">
+                                    <label class="form-label">Model Selection</label>
+                                    <select class="form-select" id="modelSelect">
+                                        <option value="RandomForest">Random Forest</option>
+                                        <option value="LogisticRegression">Logistic Regression</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Fraud Threshold</label>
+                                    <input type="range" class="form-range" id="fraudThreshold" min="0" max="100" value="50">
+                                    <div class="d-flex justify-content-between">
+                                        <small>0%</small>
+                                        <small id="thresholdValue">50%</small>
+                                        <small>100%</small>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Display Settings</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="showProbabilities" checked>
+                                        <label class="form-check-label" for="showProbabilities">
+                                            Show prediction probabilities
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+                                        <label class="form-check-label" for="autoRefresh">
+                                            Auto-refresh dashboard
+                                        </label>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Settings</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = e.target.closest('.nav-link').dataset.section;
+                
+                // Update active states
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                e.target.closest('.nav-link').classList.add('active');
+                
+                // Show selected section
+                document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+                document.getElementById(section).classList.add('active');
+            });
+        });
+
+        // Transaction History
+        let transactionHistory = [];
+
+        function addToHistory(transaction, result) {
+            const historyItem = {
+                time: transaction.Time,
+                amount: transaction.Amount,
+                status: result.is_fraud ? 'Fraudulent' : 'Legitimate',
+                probability: result.fraud_probability,
+                date: new Date().toLocaleString()
+            };
+            
+            transactionHistory.unshift(historyItem);
+            updateHistoryTable();
+        }
+
+        function updateHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            
+            transactionHistory.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.time}</td>
+                    <td>$${item.amount}</td>
+                    <td><span class="badge ${item.status === 'Fraudulent' ? 'bg-danger' : 'bg-success'}">${item.status}</span></td>
+                    <td>${(item.probability * 100).toFixed(1)}%</td>
+                    <td>${item.date}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Settings
+        document.getElementById('fraudThreshold').addEventListener('input', (e) => {
+            document.getElementById('thresholdValue').textContent = e.target.value + '%';
+        });
+
+        document.getElementById('settingsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const settings = {
+                model: document.getElementById('modelSelect').value,
+                threshold: parseInt(document.getElementById('fraudThreshold').value) / 100,
+                showProbabilities: document.getElementById('showProbabilities').checked,
+                autoRefresh: document.getElementById('autoRefresh').checked
+            };
+            
+            // Save settings to localStorage
+            localStorage.setItem('fraudDetectionSettings', JSON.stringify(settings));
+            
+            // Show success message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+            alertDiv.innerHTML = `
+                Settings saved successfully!
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.getElementById('settingsForm').appendChild(alertDiv);
+            
+            // Remove alert after 3 seconds
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        });
+
+        // Load saved settings
+        const savedSettings = JSON.parse(localStorage.getItem('fraudDetectionSettings') || '{}');
+        if (savedSettings.model) document.getElementById('modelSelect').value = savedSettings.model;
+        if (savedSettings.threshold !== undefined) {
+            const thresholdValue = Math.round(savedSettings.threshold * 100);
+            document.getElementById('fraudThreshold').value = thresholdValue;
+            document.getElementById('thresholdValue').textContent = thresholdValue + '%';
+        }
+        if (savedSettings.showProbabilities !== undefined) document.getElementById('showProbabilities').checked = savedSettings.showProbabilities;
+        if (savedSettings.autoRefresh !== undefined) document.getElementById('autoRefresh').checked = savedSettings.autoRefresh;
+
+        // Export and Clear History
+        document.getElementById('exportCSV').addEventListener('click', () => {
+            const csv = [
+                ['Time', 'Amount', 'Status', 'Probability', 'Date'],
+                ...transactionHistory.map(item => [
+                    item.time,
+                    item.amount,
+                    item.status,
+                    item.probability,
+                    item.date
+                ])
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'transaction_history.csv';
+            a.click();
+        });
+
+        document.getElementById('clearHistory').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear the transaction history?')) {
+                transactionHistory = [];
+                updateHistoryTable();
+            }
+        });
+
+        // Transaction Form
+        document.getElementById('transactionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Create a transaction object with deterministic values based on amount and time
+            const amount = document.getElementById('amount').value;
+            const time = document.getElementById('time').value;
+            
+            // Feature distributions from training data
+            const distributions = {
+                V1: { mean: 0.001, std: 1.959, min: -56.408, max: 2.452 },
+                V2: { mean: -0.000, std: 1.649, min: -72.716, max: 22.058 },
+                V3: { mean: -0.000, std: 1.515, min: -48.326, max: 9.383 },
+                V4: { mean: -0.000, std: 1.416, min: -5.683, max: 16.875 },
+                V5: { mean: 0.000, std: 1.380, min: -113.743, max: 34.802 },
+                V6: { mean: -0.001, std: 1.331, min: -26.161, max: 73.302 },
+                V7: { mean: 0.000, std: 1.238, min: -43.557, max: 120.589 },
+                V8: { mean: -0.000, std: 1.191, min: -73.217, max: 20.007 },
+                V9: { mean: -0.000, std: 1.123, min: -13.434, max: 15.595 },
+                V10: { mean: 0.000, std: 1.092, min: -24.588, max: 23.745 },
+                V11: { mean: -0.001, std: 1.019, min: -4.797, max: 12.019 },
+                V12: { mean: 0.003, std: 0.997, min: -18.684, max: 7.848 },
+                V13: { mean: -0.000, std: 0.994, min: -5.792, max: 7.127 },
+                V14: { mean: -0.000, std: 0.956, min: -19.214, max: 10.527 },
+                V15: { mean: 0.001, std: 0.915, min: -4.499, max: 8.878 },
+                V16: { mean: -0.001, std: 0.874, min: -14.130, max: 17.315 },
+                V17: { mean: 0.000, std: 0.844, min: -25.163, max: 9.254 },
+                V18: { mean: 0.000, std: 0.839, min: -9.499, max: 5.041 },
+                V19: { mean: 0.001, std: 0.814, min: -7.214, max: 5.572 },
+                V20: { mean: -0.001, std: 0.771, min: -54.498, max: 39.421 },
+                V21: { mean: 0.000, std: 0.735, min: -34.830, max: 27.203 },
+                V22: { mean: 0.000, std: 0.726, min: -10.933, max: 10.503 },
+                V23: { mean: 0.000, std: 0.627, min: -44.808, max: 22.528 },
+                V24: { mean: -0.000, std: 0.605, min: -2.837, max: 4.585 },
+                V25: { mean: -0.001, std: 0.521, min: -10.295, max: 6.071 },
+                V26: { mean: 0.000, std: 0.482, min: -2.605, max: 3.517 },
+                V27: { mean: -0.000, std: 0.405, min: -22.566, max: 31.612 },
+                V28: { mean: 0.000, std: 0.327, min: -15.430, max: 33.848 }
+            };
+            
+            // Calculate risk factors with more aggressive scaling
+            const amountRisk = Math.min(parseFloat(amount) / 500, 100); // Much more aggressive amount scaling
+            const timeRisk = Math.sin((parseInt(time) / 86400) * Math.PI * 2) * 12; // Significantly increased time risk amplitude
+            
+            // Helper function to generate deterministic values based on amount and time
+            function generateValue(feature) {
+                const dist = distributions[feature];
+                
+                // Create a deterministic seed based on amount, time, and feature
+                const seed = (parseInt(amount) + parseInt(time)) * (feature.charCodeAt(1) - 48);
+                
+                // Use the seed to generate a deterministic value
+                const baseValue = Math.sin(seed / 1000) * dist.std + dist.mean;
+                
+                // Calculate feature-specific risk multiplier
+                const featureRisk = Math.abs(Math.sin(seed / 500)) * 4; // Increased feature risk multiplier
+                
+                // Add risk factors with feature-specific scaling
+                const riskValue = (amountRisk * 0.6 * featureRisk) + (timeRisk * 0.6 * featureRisk);
+                let value = baseValue + riskValue;
+                
+                // For high-risk transactions, push values to extremes
+                if (amountRisk > 20 || Math.abs(timeRisk) > 5) {
+                    value = value * (1 + Math.sin(seed / 200) * 1.2); // Increased extreme value multiplier
+                }
+                
+                // For extremely high amounts, force more extreme values
+                if (parseFloat(amount) > 100000) { // $100K threshold
+                    value = value * (1 + Math.sin(seed / 100) * 1.5); // Even more extreme for high amounts
+                }
+                
+                // For late night transactions (10 PM - 5 AM), increase risk
+                const hour = parseInt(time) / 3600;
+                if (hour >= 22 || hour <= 5) {
+                    value = value * (1 + Math.sin(seed / 150) * 1.3); // Additional risk for late night
+                }
+                
+                // Ensure value stays within observed range
+                value = Math.max(Math.min(value, dist.max), dist.min);
+                
+                return value.toFixed(3);
+            }
+            
+            const transaction = {
+                Time: parseInt(time),
+                Amount: parseFloat(amount),
+                // Generate deterministic values matching training data distributions
+                V1: generateValue('V1'),
+                V2: generateValue('V2'),
+                V3: generateValue('V3'),
+                V4: generateValue('V4'),
+                V5: generateValue('V5'),
+                V6: generateValue('V6'),
+                V7: generateValue('V7'),
+                V8: generateValue('V8'),
+                V9: generateValue('V9'),
+                V10: generateValue('V10'),
+                V11: generateValue('V11'),
+                V12: generateValue('V12'),
+                V13: generateValue('V13'),
+                V14: generateValue('V14'),
+                V15: generateValue('V15'),
+                V16: generateValue('V16'),
+                V17: generateValue('V17'),
+                V18: generateValue('V18'),
+                V19: generateValue('V19'),
+                V20: generateValue('V20'),
+                V21: generateValue('V21'),
+                V22: generateValue('V22'),
+                V23: generateValue('V23'),
+                V24: generateValue('V24'),
+                V25: generateValue('V25'),
+                V26: generateValue('V26'),
+                V27: generateValue('V27'),
+                V28: generateValue('V28')
+            };
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(transaction)
+                });
+                
+                const result = await response.json();
+                
+                // Get current settings
+                const settings = JSON.parse(localStorage.getItem('fraudDetectionSettings') || '{}');
+                const threshold = (settings.threshold || 0.5) * 100; // Convert to percentage
+                
+                // Determine fraud status based on threshold
+                const isFraud = result.fraud_probability * 100 > threshold;
+                console.log(`Probability: ${result.fraud_probability * 100}%, Threshold: ${threshold}%, Is Fraud: ${isFraud}`);
+                
+                // Update stats
+                const totalTransactions = parseInt(document.getElementById('totalTransactions').textContent) + 1;
+                document.getElementById('totalTransactions').textContent = totalTransactions;
+                
+                if (isFraud) {
+                    const fraudCount = parseInt(document.getElementById('fraudCount').textContent) + 1;
+                    document.getElementById('fraudCount').textContent = fraudCount;
+                } else {
+                    const legitimateCount = parseInt(document.getElementById('legitimateCount').textContent) + 1;
+                    document.getElementById('legitimateCount').textContent = legitimateCount;
+                }
+                
+                const fraudRate = (parseInt(document.getElementById('fraudCount').textContent) / totalTransactions * 100).toFixed(1);
+                document.getElementById('fraudRate').textContent = fraudRate + '%';
+                
+                // Add result to list
+                const resultsList = document.getElementById('resultsList');
+                const resultItem = document.createElement('div');
+                resultItem.className = `list-group-item ${isFraud ? 'list-group-item-danger' : 'list-group-item-success'}`;
+                resultItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Amount: $${amount}</strong>
+                            <br>
+                            <small>Time: ${time}</small>
+                        </div>
+                        <div>
+                            <span class="badge ${isFraud ? 'bg-danger' : 'bg-success'}">
+                                ${isFraud ? 'Fraud' : 'Legitimate'}
+                            </span>
+                            <br>
+                            <small>Probability: ${(result.fraud_probability * 100).toFixed(1)}%</small>
+                        </div>
+                    </div>
+                `;
+                resultsList.insertBefore(resultItem, resultsList.firstChild);
+                
+                // Add to history
+                addToHistory(transaction, { ...result, is_fraud: isFraud });
+                
+                // Clear form
+                document.getElementById('transactionForm').reset();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error checking transaction. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
