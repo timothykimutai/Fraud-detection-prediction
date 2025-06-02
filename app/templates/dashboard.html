@@ -210,19 +210,19 @@
                             </div>
                             <div class="transaction-history">
                                 <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>Time</th>
-                                            <th>Amount</th>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Amount</th>
                                             <th>Status</th>
                                             <th>Probability</th>
                                             <th>Date</th>
-                                        </tr>
-                                    </thead>
+                </tr>
+            </thead>
                                     <tbody id="historyTableBody">
                                         <!-- History will be added here dynamically -->
                                     </tbody>
-                                </table>
+        </table>
                             </div>
                         </div>
                     </div>
@@ -314,7 +314,7 @@
             
             transactionHistory.forEach(item => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
+            row.innerHTML = `
                     <td>${item.time}</td>
                     <td>$${item.amount}</td>
                     <td><span class="badge ${item.status === 'Fraudulent' ? 'bg-danger' : 'bg-success'}">${item.status}</span></td>
